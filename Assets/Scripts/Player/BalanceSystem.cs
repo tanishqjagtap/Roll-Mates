@@ -20,6 +20,8 @@ public class BalanceSystem : MonoBehaviour
     public bool GameOver { get; private set; }
 
     float leftTimer, rightTimer, secondFallTimer;
+    public float LeftDipProgress => leftTimer / timeToFall;
+    public float RightDipProgress => rightTimer / timeToFall;
     LogFloat water;
 
     void Awake() => water = log.GetComponent<LogFloat>();

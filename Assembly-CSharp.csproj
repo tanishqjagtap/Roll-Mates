@@ -53,6 +53,7 @@
     <Compile Include="Assets\Scripts\Player\FollowCamera.cs" />
     <Compile Include="Assets\Scripts\Player\LogController.cs" />
     <Compile Include="Assets\Scripts\Water\LogPushTest.cs" />
+    <Compile Include="Assets\Scripts\Player\PlayerOnLog.cs" />
     <Compile Include="Assets\Scripts\Player\BalanceSystem.cs" />
   </ItemGroup>
   <ItemGroup>

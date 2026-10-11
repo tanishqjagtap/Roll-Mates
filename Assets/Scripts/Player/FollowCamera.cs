@@ -3,29 +3,32 @@ using UnityEngine;
 [RequireComponent(typeof(Camera))]
 public class FollowCamera : MonoBehaviour
 {
-    public Transform target;            // drag LogRoot here
+    public Transform target;            // LogRoot
     public Rigidbody targetBody;        // optional, found automatically
 
     [Header("Position")]
-    public float distance = 14f;        // behind the log
-    public float height = 6f;           // above the log
-    public float lookAhead = 4f;        // aim point in front of the log
+    public float distance = 14f;
+    public float height = 6f;
+    public float lookAhead = 4f;
     public float lookHeight = 0.5f;
 
-    [Header("Smoothing")]
-    public float positionSmoothTime = 0.25f;
-    public float turnSmooth = 2.5f;     // lower = lazier turns
-    public float lookSmooth = 6f;
+    [Header("Stay behind")]
+    public float turnSmooth = 5f;           // higher = camera swings around faster
+    public float maxLagAngle = 20f;         // camera can never be further off than this
+    public float positionSmoothTime = 0.12f;
+    public float lookSmooth = 10f;
 
-    [Header("Speed FOV")]
+    [Header("Speed effects")]
+    public float pullBackAtSpeed = 2.5f;    // extra distance at full speed
     public float baseFov = 60f;
-    public float maxFovBoost = 8f;
-    public float fullBoostSpeed = 4f;
-    public float fovSmooth = 3f;
+    public float maxFovBoost = 6f;
+    public float fullEffectSpeed = 3f;
+    public float effectSmooth = 3f;
 
     Camera cam;
     Vector3 heading;
     Vector3 velocity;
+    float extraDistance;
     float shakeTime, shakeDuration, shakeStrength;
 
     void Awake()
@@ -43,8 +46,7 @@ public class FollowCamera : MonoBehaviour
         transform.rotation = Quaternion.LookRotation(LookPoint() - transform.position);
     }
 
-    // The log's long axis (local Z) doesn't change when it rolls,
-    // so heading is built from it. Same formula as LogController.
+    // log's long axis (local Z) doesn't change when it rolls
     Vector3 GetTravelDirection()
     {
         Vector3 dir = Vector3.Cross(Vector3.up, target.forward);
@@ -53,7 +55,7 @@ public class FollowCamera : MonoBehaviour
     }
 
     Vector3 DesiredPosition() =>
-        target.position - heading * distance + Vector3.up * height;
+        target.position - heading * (distance + extraDistance) + Vector3.up * height;
 
     Vector3 LookPoint() =>
         target.position + heading * lookAhead + Vector3.up * lookHeight;
@@ -62,40 +64,42 @@ public class FollowCamera : MonoBehaviour
     {
         if (target == null) return;
 
-        // smoothly follow the log's heading
+        // 1. smoothly follow the log's heading
         Vector3 raw = GetTravelDirection();
         float t = 1f - Mathf.Exp(-turnSmooth * Time.deltaTime);
         heading = Vector3.Slerp(heading, raw, t).normalized;
 
-        // position
+        // 2. but never lag more than maxLagAngle behind it
+        float off = Vector3.SignedAngle(heading, raw, Vector3.up);
+        if (Mathf.Abs(off) > maxLagAngle)
+        {
+            float fix = off - Mathf.Sign(off) * maxLagAngle;
+            heading = Quaternion.AngleAxis(fix, Vector3.up) * heading;
+        }
+
+        // 3. speed effects
+        float speed = targetBody != null ? targetBody.linearVelocity.magnitude : 0f;
+        float k = Mathf.Clamp01(speed / fullEffectSpeed);
+        float e = 1f - Mathf.Exp(-effectSmooth * Time.deltaTime);
+        extraDistance = Mathf.Lerp(extraDistance, pullBackAtSpeed * k, e);
+        cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, baseFov + maxFovBoost * k, e);
+
+        // 4. position and look
         Vector3 pos = Vector3.SmoothDamp(transform.position, DesiredPosition(),
                                          ref velocity, positionSmoothTime);
-
-        // rotation
         Quaternion wanted = Quaternion.LookRotation(LookPoint() - pos);
         float r = 1f - Mathf.Exp(-lookSmooth * Time.deltaTime);
         transform.rotation = Quaternion.Slerp(transform.rotation, wanted, r);
 
-        // shake
+        // 5. shake
         if (shakeTime > 0f)
         {
             shakeTime -= Time.deltaTime;
-            float falloff = shakeTime / shakeDuration;
-            pos += Random.insideUnitSphere * shakeStrength * falloff;
+            pos += Random.insideUnitSphere * shakeStrength * (shakeTime / shakeDuration);
         }
         transform.position = pos;
-
-        // speed-based FOV
-        if (targetBody != null)
-        {
-            float speed = targetBody.linearVelocity.magnitude;
-            float goal = baseFov + maxFovBoost * Mathf.Clamp01(speed / fullBoostSpeed);
-            cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, goal,
-                                         1f - Mathf.Exp(-fovSmooth * Time.deltaTime));
-        }
     }
 
-    // call from other scripts: cameraScript.Shake(0.3f, 0.4f);
     public void Shake(float strength, float duration)
     {
         shakeStrength = strength;

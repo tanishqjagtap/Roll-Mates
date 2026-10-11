@@ -3,12 +3,20 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class LogFloat : MonoBehaviour
 {
-    public float waterLevel = 1f;   // Y of your water plane
-    public float sinkDepth = 0.1f;  // how far the log's center sits under the surface
-    public float spring = 40f;      // how strongly it's pulled to the surface
-    public float damping = 8f;      // stops endless bobbing
-    public float maxSpeedY = 3f;    // safety cap, so it can never shoot away
-    public float levelStrength = 6f;  // how strongly the log stays level front-to-back
+    public float waterLevel = 0f;
+    public float sinkDepth = 0.1f;
+    public float spring = 40f;
+    public float damping = 10f;
+    public float maxSpeedY = 3f;
+
+    [Header("Tilt (end dipping)")]
+    public float pitchStiffness = 25f;
+    public float pitchDamping = 6f;
+    public float maxTiltDeg = 20f;          // hard cap on how far an end can dip
+    [HideInInspector] public float targetPitchDeg;   // set by LogController
+
+    [Header("Safety")]
+    public float maxSpinSpeed = 6f;
 
     Rigidbody rb;
 
@@ -16,21 +24,30 @@ public class LogFloat : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         rb.useGravity = false;
+        rb.maxAngularVelocity = maxSpinSpeed;
     }
 
     void FixedUpdate()
     {
-        float targetY = waterLevel - sinkDepth;
-        float error = targetY - rb.position.y;
+        // height spring
+        float error = (waterLevel - sinkDepth) - rb.position.y;
         float accel = error * spring - rb.linearVelocity.y * damping;
         rb.AddForce(Vector3.up * accel, ForceMode.Acceleration);
 
         Vector3 v = rb.linearVelocity;
         v.y = Mathf.Clamp(v.y, -maxSpeedY, maxSpeedY);
         rb.linearVelocity = v;
-        
-        Vector3 fwd = transform.forward;
-        Vector3 flat = new Vector3(fwd.x, 0f, fwd.z).normalized;
-        rb.AddTorque(Vector3.Cross(fwd, flat) * levelStrength, ForceMode.Acceleration);
+
+        // tilt servo: steer the log's long axis toward the target pitch
+        Vector3 axis = transform.forward;
+        Vector3 travel = Vector3.Cross(Vector3.up, axis);
+        travel = travel.sqrMagnitude < 0.0001f ? Vector3.right : travel.normalized;
+
+        float pitch = Mathf.Asin(Mathf.Clamp(axis.y, -1f, 1f));   // + = +Z end up
+        float target = Mathf.Clamp(targetPitchDeg, -maxTiltDeg, maxTiltDeg) * Mathf.Deg2Rad;
+
+        float pitchAccel = (target - pitch) * pitchStiffness
+                         + Vector3.Dot(rb.angularVelocity, travel) * pitchDamping;
+        rb.AddTorque(-travel * pitchAccel, ForceMode.Acceleration);
     }
 }

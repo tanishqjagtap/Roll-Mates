@@ -131,6 +131,7 @@ GameObject:
   - component: {fileID: 330585545}
   - component: {fileID: 330585544}
   - component: {fileID: 330585547}
+  - component: {fileID: 330585548}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -205,8 +206,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.1775525, y: 0.0020681324, z: -0.0003736094, w: 0.9841091}
-  m_LocalPosition: {x: 5.1989675, y: 7.937655, z: -10.195028}
+  m_LocalRotation: {x: 0.10049546, y: 0.71052766, z: -0.10368023, w: 0.68869555}
+  m_LocalPosition: {x: -12.838448, y: 6.8146324, z: 0.2661755}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -256,6 +257,31 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &330585548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330585543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a89a81e8dddc8046bc2846658b76164, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FollowCamera
+  target: {fileID: 1339927316}
+  targetBody: {fileID: 0}
+  distance: 14
+  height: 6
+  lookAhead: 4
+  lookHeight: 0.5
+  positionSmoothTime: 0.25
+  turnSmooth: 2.5
+  lookSmooth: 6
+  baseFov: 60
+  maxFovBoost: 8
+  fullBoostSpeed: 4
+  fovSmooth: 3
 --- !u!1001 &438703098
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -330,6 +356,121 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 40edc20e2b0d0a74980bf570b6ec1351, type: 3}
   m_PrefabInstance: {fileID: 438703098}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &888056213
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 888056214}
+  m_Layer: 0
+  m_Name: 'Right Sensor '
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &888056214
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 888056213}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.02, y: 0.94000006, z: -3.91}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1339927316}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &917808254
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 917808255}
+  m_Layer: 0
+  m_Name: Left Sensor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &917808255
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 917808254}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.02, y: 0.94000006, z: 3.82}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1339927316}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1037452408
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1037452410}
+  - component: {fileID: 1037452409}
+  m_Layer: 0
+  m_Name: Balance Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1037452409
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1037452408}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2036370f097e3348a7ccec77ca8a74b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BalanceSystem
+  log: {fileID: 1339927319}
+  cam: {fileID: 330585548}
+  leftSensor: {fileID: 917808255}
+  rightSensor: {fileID: 888056214}
+  dipDepth: 0.5
+  timeToFall: 2
+  recoverRate: 1
+  oppositePlayerFalls: 1
+  secondFallDelay: 1.2
+--- !u!4 &1037452410
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1037452408}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1107742982
 GameObject:
   m_ObjectHideFlags: 0
@@ -416,7 +557,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 400, y: 0.1, z: 400}
+  m_LocalScale: {x: 5423.6, y: 1.3559, z: 5423.6}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -438,7 +579,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 10, y: 2.220446e-16, z: 10}
   m_Center: {x: 0, y: 0, z: 0}
@@ -454,6 +595,8 @@ GameObject:
   - component: {fileID: 1339927315}
   - component: {fileID: 1339927314}
   - component: {fileID: 1339927317}
+  - component: {fileID: 1339927318}
+  - component: {fileID: 1339927319}
   m_Layer: 0
   m_Name: LogRoot
   m_TagString: Untagged
@@ -525,6 +668,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 438703100}
+  - {fileID: 917808255}
+  - {fileID: 888056214}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1339927317
@@ -539,11 +684,54 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bbaa81a4f03cca844a3297fcb190e5f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LogFloat
-  waterLevel: 1
+  waterLevel: 0
   sinkDepth: 0.1
   spring: 40
   damping: 8
   maxSpeedY: 3
+  pitchStiffness: 25
+  pitchDamping: 6
+  maxTiltDeg: 20
+  targetPitchDeg: 0
+  maxSpinSpeed: 6
+--- !u!114 &1339927318
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1339927312}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f70afb4dc7ce754494a6a5f1adaaf70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LogPushTest
+  pushForce: 15
+--- !u!114 &1339927319
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1339927312}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 464cee987389f9e4c926e8ad8572e959, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LogController
+  leftPlayerKey: 119
+  rightPlayerKey: 273
+  leftEnabled: 1
+  rightEnabled: 1
+  pushRiseRate: 1
+  pushFallRate: 0.5
+  moveForce: 12
+  turnTorque: 2.5
+  rollTorque: 6
+  maxSpeed: 6
+  leftSensor: {fileID: 0}
+  rightSensor: {fileID: 0}
+  tolerance: 0.25
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -551,3 +739,4 @@ SceneRoots:
   - {fileID: 330585546}
   - {fileID: 1107742986}
   - {fileID: 1339927316}
+  - {fileID: 1037452410}

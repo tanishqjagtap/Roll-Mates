@@ -93,7 +93,7 @@ public class PlayerOnLog : MonoBehaviour
 
     void OnPlayerFell(int fellSide)
     {
-        if (fellSide == (int)side) Fall();
+        if (fellSide == 2 || fellSide == (int)side) Fall();
     }
 
     void OnRespawned()
@@ -128,7 +128,7 @@ public class PlayerOnLog : MonoBehaviour
         axisWorld.y = 0f;
         axisWorld.Normalize();
         Vector3 outward = side == Side.Left ? -axisWorld : axisWorld;
-        Vector3 inherited = logBody.GetPointVelocity(transform.position);
+        Vector3 inherited = balance.PreStepVelocity; // speed from before any crash
 
         // Turn on the player's own colliders but let them pass through the log.
         foreach (Collider c in colliders) c.enabled = true;

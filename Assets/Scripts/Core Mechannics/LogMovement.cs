@@ -13,6 +13,8 @@ public class LogMovement : MonoBehaviour
     [SerializeField] float maxSpeed = 4f;
     [Tooltip("Seconds for a push to build up to full. Higher = lazier, heavier feel.")]
     [SerializeField] float pushRampTime = 0.5f;
+    [Tooltip("Seconds for a push to fade out after you let go. Higher = the log is still nudged along for longer, so it flows on.")]
+    [SerializeField] float releaseTime = 0.9f;
 
     [Header("Grip (lower = more slippery and harder to control)")]
     [Tooltip("How firmly the player who is NOT pushing holds their end. Low = that end drifts and the turn gets sloppy.")]
@@ -21,6 +23,22 @@ public class LogMovement : MonoBehaviour
     [SerializeField] float sideGrip = 60f;
     [Tooltip("Safety cap on spin speed, degrees per second.")]
     [SerializeField] float maxTurnSpeed = 140f;
+
+    [Header("Drift (master knob + extras that make the log wander and slide)")]
+    [Tooltip("Master slipperiness. 1 = grip values as set above. 2 = half the grip. 3 = very slidey.")]
+    [SerializeField, Range(0.5f, 3f)] float driftAmount = 2f;
+    [Tooltip("Grip left at full speed, as a fraction of normal. Lower = slides more the faster you go.")]
+    [SerializeField, Range(0.1f, 1f)] float highSpeedGripFactor = 0.4f;
+    [Tooltip("Pushes the log wide in turns, like skidding out. 0 = off.")]
+    [SerializeField] float turnSkid = 0.6f;
+    [Tooltip("Gentle river current along the starting direction. 0 = still water.")]
+    [SerializeField] float currentStrength = 15f;
+    [Tooltip("Random sideways gusts of water (N). 0 = off.")]
+    [SerializeField] float gustStrength = 40f;
+    [SerializeField] float gustSpeed = 0.35f;
+    [Tooltip("Random twisting that makes the log waver while moving (N*m). 0 = off.")]
+    [SerializeField] float wobbleTorque = 150f;
+    [SerializeField] float wobbleSpeed = 0.6f;
 
     [Header("Surface (the surface system will drive this later)")]
     public float surfaceMultiplier = 1f;
@@ -48,6 +66,7 @@ public class LogMovement : MonoBehaviour
     }
 
     Rigidbody rb;
+    Vector3 riverDirection = Vector3.forward;
     float leftInput;
     float rightInput;
 
@@ -55,6 +74,7 @@ public class LogMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         rb.interpolation = RigidbodyInterpolation.Interpolate;
+        riverDirection = Forward; // the river flows the way the log faces at the start
     }
 
     public void ResetInputs()
@@ -78,20 +98,25 @@ public class LogMovement : MonoBehaviour
         float leftTarget = InputLocked ? 0f : ReadAxis(Key.W, Key.S);
         float rightTarget = InputLocked ? 0f : ReadAxis(Key.UpArrow, Key.DownArrow);
 
-        float step = Time.fixedDeltaTime / Mathf.Max(pushRampTime, 0.01f);
-        leftInput = Mathf.MoveTowards(leftInput, leftTarget, step);
-        rightInput = Mathf.MoveTowards(rightInput, rightTarget, step);
+        leftInput = Mathf.MoveTowards(leftInput, leftTarget, RampStep(leftTarget));
+        rightInput = Mathf.MoveTowards(rightInput, rightTarget, RampStep(rightTarget));
 
         // Disconnected from the keyboard = no forces from the players at all.
         if (!InputLocked)
         {
-            ApplyEnd(leftDrive, leftInput, forward);
-            ApplyEnd(rightDrive, rightInput, forward);
+            ApplyEnd(leftDrive, leftInput, rightInput, forward);
+            ApplyEnd(rightDrive, rightInput, leftInput, forward);
         }
 
-        // Log resists sliding along its own length.
-        float lateralSpeed = Vector3.Dot(rb.linearVelocity, axis);
-        rb.AddForce(-axis * lateralSpeed * sideGrip);
+        // Log resists sliding along its own length, but grips less the faster it goes.
+        Vector3 flatVelocity = rb.linearVelocity;
+        flatVelocity.y = 0f;
+        float speed01 = Mathf.Clamp01(flatVelocity.magnitude / Mathf.Max(maxSpeed, 0.1f));
+        float lateralSpeed = Vector3.Dot(flatVelocity, axis);
+        float grip = (sideGrip / driftAmount) * Mathf.Lerp(1f, highSpeedGripFactor, speed01);
+        rb.AddForce(-axis * lateralSpeed * grip);
+
+        ApplyDrift(axis, forward, flatVelocity, speed01);
 
         // The log never physically spins along its length (that would tip the players over).
         // The rolling you see is animated by LogRollVisual instead.
@@ -105,7 +130,33 @@ public class LogMovement : MonoBehaviour
         rb.angularVelocity = av;
     }
 
-    void ApplyEnd(Transform drive, float input, Vector3 forward)
+    // Extra forces that make the log slide, skid and wander like it is really on moving water.
+    void ApplyDrift(Vector3 axis, Vector3 forward, Vector3 flatVelocity, float speed01)
+    {
+        // 1. Skid wide in turns: the faster you turn at speed, the more the log slides outward.
+        float forwardSpeed = Vector3.Dot(flatVelocity, forward);
+        float yawRate = rb.angularVelocity.y;
+        rb.AddForce(-axis * yawRate * forwardSpeed * rb.mass * turnSkid);
+
+        // 2. River current plus random sideways gusts.
+        rb.AddForce(riverDirection * currentStrength);
+        float gust = (Mathf.PerlinNoise(Time.time * gustSpeed, 11.3f) - 0.5f) * 2f;
+        Vector3 sideways = Vector3.Cross(Vector3.up, riverDirection);
+        rb.AddForce(sideways * gust * gustStrength);
+
+        // 3. Wobble: random twisting that grows with speed, so a fast log never goes perfectly straight.
+        float wobble = (Mathf.PerlinNoise(Time.time * wobbleSpeed, 47.1f) - 0.5f) * 2f;
+        rb.AddTorque(Vector3.up * wobble * wobbleTorque * speed01);
+    }
+
+    // Pushes build up quickly but fade out slowly, so the log flows on after you let go.
+    float RampStep(float target)
+    {
+        float time = Mathf.Abs(target) < 0.01f ? releaseTime : pushRampTime;
+        return Time.fixedDeltaTime / Mathf.Max(time, 0.01f);
+    }
+
+    void ApplyEnd(Transform drive, float input, float partnerInput, Vector3 forward)
     {
         float endSpeed = Vector3.Dot(rb.GetPointVelocity(drive.position), forward);
 
@@ -116,10 +167,11 @@ public class LogMovement : MonoBehaviour
             float force = input * driveStrength * surfaceMultiplier * (1f - ratio);
             rb.AddForceAtPosition(forward * force, drive.position);
         }
-        else
+        else if (Mathf.Abs(partnerInput) > 0.01f)
         {
-            // Static end: resist movement so the other end pivots around it.
-            rb.AddForceAtPosition(-forward * endSpeed * staticEndGrip, drive.position);
+            // Only hold this end while the partner is pushing (a turn).
+            // When both players are idle nothing holds the log, so it coasts freely.
+            rb.AddForceAtPosition(-forward * endSpeed * (staticEndGrip / driftAmount), drive.position);
         }
     }
 
@@ -148,4 +200,4 @@ public class LogMovement : MonoBehaviour
         Gizmos.color = Color.green;
         Gizmos.DrawRay(transform.position, forward * 3f);
     }
-}
+}   

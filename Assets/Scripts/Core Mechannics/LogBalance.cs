@@ -21,6 +21,8 @@ public class LogBalance : MonoBehaviour
     [SerializeField] float fallDuration = 1.5f;
     [Tooltip("One last shove at the fallen player's end as the log lets go (impulse, N*s). 0 = none.")]
     [SerializeField] float slipImpulse = 120f;
+    [Tooltip("Seconds before the restart after the players touch an obstacle. They fall the instant they touch it; this is only the wait before the restart.")]
+    [SerializeField] float obstacleFallDuration = 0.8f;
     [SerializeField] float respawnLockTime = 0.75f;
 
     [Header("Push Dip (a pushing player presses their end into the water)")]
@@ -32,10 +34,16 @@ public class LogBalance : MonoBehaviour
     [Header("Debug")]
     [SerializeField] bool showDebugBars = true;
 
-    // 0 = left player, 1 = right player.
+    // 0 = left player, 1 = right player, 2 = both players.
     public event Action<int> PlayerFell;
     // Fired right after the log is put back at its start. Players use it to climb back on.
     public event Action Respawned;
+
+    public float ObstacleFallDuration => obstacleFallDuration;
+
+    // The log's velocity just before the latest physics step, i.e. before any crash slows it down.
+    // Players use it so they keep flying forward when the log hits something.
+    public Vector3 PreStepVelocity { get; private set; }
 
     public float LeftStrain => leftStrain;
     public float RightStrain => rightStrain;
@@ -69,6 +77,8 @@ public class LogBalance : MonoBehaviour
 
     void FixedUpdate()
     {
+        PreStepVelocity = rb.linearVelocity;
+
         if (state != State.Playing) return;
 
         float left = movement.LeftInput;
@@ -80,8 +90,8 @@ public class LogBalance : MonoBehaviour
         ApplyDip(movement.LeftDrive, left, leftStrain);
         ApplyDip(movement.RightDrive, right, rightStrain);
 
-        if (leftStrain >= 1f) StartCoroutine(FallRoutine(0));
-        else if (rightStrain >= 1f) StartCoroutine(FallRoutine(1));
+        if (leftStrain >= 1f) TriggerFall(0, true);
+        else if (rightStrain >= 1f) TriggerFall(1, true);
     }
 
     void ApplyDip(Transform end, float input, float strain)
@@ -107,21 +117,32 @@ public class LogBalance : MonoBehaviour
         return Mathf.Clamp01(strain);
     }
 
-    IEnumerator FallRoutine(int side)
+    // Starts the fall and restart. side: 0 = left player, 1 = right player, 2 = both.
+    // Ignored if a fall is already happening.
+    public void TriggerFall(int side, bool slip = false, float restartDelay = -1f)
+    {
+        if (state != State.Playing) return;
+        StartCoroutine(FallRoutine(side, slip, restartDelay >= 0f ? restartDelay : fallDuration));
+    }
+
+    IEnumerator FallRoutine(int side, bool slip, float restartDelay)
     {
         state = State.Falling;
 
         // 1. Log disconnects from the keyboard and glides on its own.
         movement.InputLocked = true;
 
-        // 2. One last shove at the end that over-pushed, then the player goes in the water.
-        Transform end = side == 0 ? movement.LeftDrive : movement.RightDrive;
-        if (slipImpulse > 0f)
+        // 2. Over-pushing gives the log one last shove at that player's end.
+        //    Then the player (or both players) go in the water.
+        if (slip && side != 2 && slipImpulse > 0f)
+        {
+            Transform end = side == 0 ? movement.LeftDrive : movement.RightDrive;
             rb.AddForceAtPosition(movement.Forward * slipImpulse, end.position, ForceMode.Impulse);
+        }
         PlayerFell?.Invoke(side);
 
         // 3. Let physics play out.
-        yield return new WaitForSeconds(fallDuration);
+        yield return new WaitForSeconds(restartDelay);
 
         // 4. Back to the start.
         Respawn();

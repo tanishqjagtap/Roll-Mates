@@ -14,6 +14,16 @@ public class PlayerOnLog : MonoBehaviour
     [SerializeField] float leanAngle = 12f;
     [SerializeField] float bobHeight = 0.05f;
     [SerializeField] float bobSpeed = 9f;
+    [Tooltip("Turns the character red as strain builds. With a model that has several materials only the first one changes, so you may want this off.")]
+    [SerializeField] bool tintWhenStrained = true;
+
+    [Header("Animation (optional)")]
+    [Tooltip("Found automatically on the human model if left empty.")]
+    [SerializeField] Animator animator;
+    [Tooltip("The float parameter in the Animator: -1 = backward, 0 = idle, 1 = forward.")]
+    [SerializeField] string moveParameter = "Move";
+    [Tooltip("Smoothing for the animation blend, in seconds.")]
+    [SerializeField] float animationDamp = 0.1f;
 
     [Header("Fall")]
     [SerializeField] float sideLaunchSpeed = 3f;
@@ -37,6 +47,7 @@ public class PlayerOnLog : MonoBehaviour
     Color baseColor;
     float halfHeight = 1f;
 
+    int moveHash;
     Rigidbody fallBody;
     bool fallen;
     float walkPhase;
@@ -67,6 +78,14 @@ public class PlayerOnLog : MonoBehaviour
         Rigidbody own = GetComponent<Rigidbody>();
         if (own != null) Destroy(own);
 
+        if (animator == null) animator = FindModelAnimator();
+        if (animator != null)
+        {
+            moveHash = Animator.StringToHash(moveParameter);
+            animator.applyRootMotion = false; // the player must stay on the log
+            CheckAnimatorSetup();
+        }
+
         Renderer rend = GetComponentInChildren<Renderer>();
         if (rend != null)
         {
@@ -75,6 +94,47 @@ public class PlayerOnLog : MonoBehaviour
             colorProperty = material.HasProperty("_BaseColor") ? "_BaseColor" : "_Color";
             baseColor = material.GetColor(colorProperty);
         }
+    }
+
+    // Prefer the Animator on the human model (a child). An Animator on this object itself has no avatar,
+    // so it would be driven instead of the real one and the character would stay in a T-pose.
+    Animator FindModelAnimator()
+    {
+        Animator[] found = GetComponentsInChildren<Animator>();
+        foreach (Animator a in found)
+        {
+            if (a.gameObject != gameObject) return a;
+        }
+        return found.Length > 0 ? found[0] : null;
+    }
+
+    // Tells you in the Console exactly what is missing, instead of silently doing nothing.
+    void CheckAnimatorSetup()
+    {
+        if (animator.gameObject == gameObject)
+            Debug.LogWarning("PlayerOnLog (" + name + "): the Animator is on this object, not on the human model. " +
+                             "Remove it here and put an Animator on the human child instead.", this);
+
+        if (animator.runtimeAnimatorController == null)
+        {
+            Debug.LogWarning("PlayerOnLog (" + name + "): the Animator on '" + animator.name +
+                             "' has no Controller assigned.", this);
+            return;
+        }
+
+        if (animator.avatar == null)
+            Debug.LogWarning("PlayerOnLog (" + name + "): the Animator on '" + animator.name +
+                             "' has no Avatar. Humanoid animations stay in a T-pose without it.", this);
+
+        bool found = false;
+        foreach (AnimatorControllerParameter parameter in animator.parameters)
+        {
+            if (parameter.nameHash == moveHash && parameter.type == AnimatorControllerParameterType.Float)
+                found = true;
+        }
+        if (!found)
+            Debug.LogWarning("PlayerOnLog (" + name + "): the controller has no Float parameter called '" +
+                             moveParameter + "'. Fix 'Move Parameter' so it matches the Animator exactly.", this);
     }
 
     void OnEnable()
@@ -108,14 +168,22 @@ public class PlayerOnLog : MonoBehaviour
         float input = side == Side.Left ? movement.LeftInput : movement.RightInput;
         float strain = side == Side.Left ? balance.LeftStrain : balance.RightStrain;
 
-        // Lean into the push and bob like stepping.
-        walkPhase += Mathf.Abs(input) * bobSpeed * Time.deltaTime;
-        float bob = Mathf.Abs(Mathf.Sin(walkPhase)) * bobHeight * Mathf.Abs(input);
+        // Real animation: idle / walk forward / walk backward, blended by the push.
+        if (animator != null)
+            animator.SetFloat(moveHash, input, animationDamp, Time.deltaTime);
+
+        // Lean into the push. The fake step bobbing is only used when there is no animation.
+        float bob = 0f;
+        if (animator == null)
+        {
+            walkPhase += Mathf.Abs(input) * bobSpeed * Time.deltaTime;
+            bob = Mathf.Abs(Mathf.Sin(walkPhase)) * bobHeight * Mathf.Abs(input);
+        }
         transform.localPosition = baseLocalPosition + Vector3.up * bob;
         transform.localRotation = Quaternion.AngleAxis(leanAngle * input, localAxis) * baseLocalRotation;
 
         // Turn red as strain builds.
-        if (material != null)
+        if (tintWhenStrained && material != null)
             material.SetColor(colorProperty, Color.Lerp(baseColor, Color.red, strain));
     }
 
@@ -123,6 +191,7 @@ public class PlayerOnLog : MonoBehaviour
     {
         if (fallen) return;
         fallen = true;
+        if (animator != null) animator.SetFloat(moveHash, 0f);
 
         Vector3 axisWorld = movement.RightDrive.position - movement.LeftDrive.position;
         axisWorld.y = 0f;

@@ -49,16 +49,55 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.3.11f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Farland Skies\!Core\Scripts\DotParams\SortedParamsList.cs" />
     <Compile Include="Assets\Scripts\Environment\EnvironmentScatterer.cs" />
     <Compile Include="Assets\Scripts\Core Mechannics\LogObstacleHit.cs" />
+    <Compile Include="Assets\Farland Skies\!Core\Scripts\Demo\ObjectRotator.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Scripts\DotParams\StarsParam.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Scripts\DotParams\MoonParamsList.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Demo\Standart\Scripts\UI\Buttons\PausetButton.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Scripts\DotParams\SunParamsList.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Scripts\Controllers\SkyboxController.cs" />
     <Compile Include="Assets\Scripts\Core Mechannics\PlayerOnLog.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Scripts\DotParams\CloudsParamsList.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Scripts\DotParams\SkyParamsList.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Demo\Standart\Scripts\Player\FPSWalkerEnhanced.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Scripts\DotParams\CelestialParamsList.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Scripts\Controllers\SkyboxCycleManager.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Scripts\DotParams\SunParam.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Demo\Standart\Scripts\UI\TimeText.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Scripts\DotParams\CelestialParam.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Scripts\DotParams\CloudsParam.cs" />
     <Compile Include="Assets\Scripts\Core Mechannics\LogMovement.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Scripts\Controllers\SkyboxDayNightCycle.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Scripts\DotParams\SkyParam.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Demo\Standart\Scripts\UI\PropertyToggle.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Demo\Standart\Scripts\UI\Buttons\CloudsRotationButton.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Demo\Standart\Scripts\UI\Buttons\ResetButton.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Scripts\DotParams\MoonParam.cs" />
     <Compile Include="Assets\Scripts\Animation\LogRollVisual.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Demo\Standart\Scripts\Player\SmoothMouseLook.cs" />
+    <Compile Include="Assets\Farland Skies\!Core\Scripts\DotParams\DotParamsList.cs" />
     <Compile Include="Assets\Scripts\Animation\ObstacleSpinner.cs" />
+    <Compile Include="Assets\Farland Skies\!Core\Scripts\Demo\UI\PanelsDropdown.cs" />
+    <Compile Include="Assets\Farland Skies\!Core\Scripts\Demo\UI\ForegroundToggle.cs" />
+    <Compile Include="Assets\Farland Skies\!Core\Scripts\Demo\UI\BaseColorButton.cs" />
+    <Compile Include="Assets\Farland Skies\!Core\Scripts\DotParams\DotParam.cs" />
     <Compile Include="Assets\Scripts\Core Mechannics\LogBalance.cs" />
     <Compile Include="Assets\Scripts\Core Mechannics\LogCameraFollow.cs" />
+    <Compile Include="Assets\Farland Skies\!Core\Scripts\Helpers\Singleton.cs" />
+    <Compile Include="Assets\Farland Skies\!Core\Scripts\Demo\CameraOrbitController.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Demo\Standart\Scripts\UI\Sliders\TimeSlider.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Demo\Standart\Scripts\UI\TexturesDropdown.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Scripts\DotParams\StarsParamsList.cs" />
+    <Compile Include="Assets\Farland Skies\!Core\Scripts\Demo\UI\ColorPicker.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Demo\Standart\Scripts\UI\Sliders\PropertySlider.cs" />
     <Compile Include="Assets\Scripts\Animation\LogRotator.cs" />
     <Compile Include="Assets\Scripts\Core Mechannics\LogBuoyancy.cs" />
+    <Compile Include="Assets\Farland Skies\Low Poly\Demo\Standart\Scripts\UI\Buttons\ColorButton.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Farland Skies\Low Poly\Shaders\LowPolySkybox.shader" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
